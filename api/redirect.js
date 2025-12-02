@@ -9,7 +9,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // Build payload for n8n
+    // Payload for n8n
     const payload = {
       offer,
       club,
@@ -18,7 +18,7 @@ export default async function handler(req, res) {
     };
 
     // Send to n8n webhook
-    await fetch("YOUR_N8N_WEBHOOK_URL_HERE", {
+    await fetch("https://dashtraq.app.n8n.cloud/webhook/redirect-track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload)
@@ -35,4 +35,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ ok: false, error: err.message });
   }
 }
-
