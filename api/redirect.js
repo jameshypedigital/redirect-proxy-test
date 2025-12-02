@@ -1,6 +1,6 @@
 export default async function handler(req, res) {
   try {
-    const { offer, club, ...rest } = req.query;
+    const { offer, club, ...utm } = req.query;
 
     if (!offer || !club) {
       return res.status(400).json({
@@ -9,28 +9,36 @@ export default async function handler(req, res) {
       });
     }
 
-    // Payload for n8n
-    const payload = {
-      offer,
-      club,
-      utm: rest,
-      timestamp: Date.now()
-    };
-
     // Send to n8n webhook
     await fetch("https://dashtraq.app.n8n.cloud/webhook/redirect-track", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        offer,
+        club,
+        utm,
+        timestamp: Date.now()
+      })
     });
 
-    // Redirect user to your universal redirect page
-    const redirectUrl = `https://af-promo.com/redirect?offer=${encodeURIComponent(
-      offer
-    )}&club=${encodeURIComponent(club)}`;
+    // 🎯 DIRECT OFFER REDIRECT
+    // Customize your offer URLs below
+    const offerMap = {
+      "join-for-1-dollar": "https://anytimefitness.com/join/?offer=1-dollar",
+      "7-day-pass": "https://anytimefitness.com/pass/7-day",
+      "paid-trial": "https://anytimefitness.com/trial"
+    };
 
-    return res.redirect(302, redirectUrl);
+    const finalUrl = offerMap[offer];
 
+    if (!finalUrl) {
+      return res.status(400).json({
+        ok: false,
+        error: `Unknown offer: ${offer}`
+      });
+    }
+
+    return res.redirect(302, finalUrl);
   } catch (err) {
     return res.status(500).json({ ok: false, error: err.message });
   }
